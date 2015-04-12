@@ -9,31 +9,34 @@ import java.util.Stack;
 public class SudokuField {
 	
 	private int fieldValue = 0;
-	private int maybeNumber;
+	private int maybeNumber = 0;
+	private int x, y;
 	private boolean changed = false;
 	
 	private Stack<Integer> history = null;
 	
 	private Set<Integer> possibleNumbers = new HashSet<Integer>();
 	
-	public SudokuField(int value) throws IllegalArgumentException{
+	public SudokuField(int value, int x, int y) throws IllegalArgumentException{
+		this.x = x;
+		this.y = y;
 		this.checkForNumber(value);
 		this.fieldValue = value;
 		history = new Stack<Integer>();
 	}
 	
+	public String getXY(){
+		return x + ", "+ y;
+	}
+	
 	public boolean setMaybeNumber(int number) throws IllegalArgumentException{
 		this.checkForNumber(number);
-		if(possibleNumbers.contains(number) && this.fieldValue==0){
+		if(possibleNumbers.contains(number) && this.isFieldSet()==false){
 			this.maybeNumber = number;
-			this.changed = true;
+			possibleNumbers.remove(number);
 			return true;
 		}
 		return false;
-	}
-	
-	public void addPossibleNumber(int number){
-		this.possibleNumbers.add(number);
 	}
 	
 	private void checkForNumber(int number) throws IllegalArgumentException{
@@ -43,11 +46,19 @@ public class SudokuField {
 	}
 	
 	public Set<Integer> getPossibleNumbers(){
-		return this.possibleNumbers;
+		return new HashSet<Integer>(this.possibleNumbers);
 	}
 	
 	public boolean isFieldSet(){
 		return this.fieldValue!=0;
+	}
+	
+	public boolean isMaybeSet(){
+		return this.maybeNumber!=0;
+	}
+	
+	public boolean hasNumberSet(){
+		return this.isFieldSet() || this.isMaybeSet();
 	}
 
 	public void enterNewState() {
@@ -55,7 +66,6 @@ public class SudokuField {
 			return;
 		}
 		history.push(this.maybeNumber);
-		this.maybeNumber = 0;
 		
 	}
 
@@ -68,7 +78,19 @@ public class SudokuField {
 	}
 	
 	public void resetPossibleNumbers(){
-		this.possibleNumbers.clear();
+		if(this.isFieldSet()){
+			this.possibleNumbers = new HashSet<Integer>();
+			return;
+		}
+		this.possibleNumbers = new HashSet<Integer>(SudokuBoard.allNumbers);
+	}
+	
+	public boolean removeNumberFromPossibleNumbers(int number){
+		if(this.possibleNumbers.contains(number)){
+			this.possibleNumbers.remove(number);
+			return true;
+		}
+		return false;
 	}
 	
 	public int getCurrentNumber(){
@@ -76,6 +98,11 @@ public class SudokuField {
 			return fieldValue;
 		}
 		return this.maybeNumber;
+	}
+	
+	@Override
+	public String toString(){
+		return this.getCurrentNumber() + "";// + this.possibleNumbers;
 	}
 	
 	
