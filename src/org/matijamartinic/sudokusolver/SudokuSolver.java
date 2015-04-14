@@ -28,7 +28,6 @@ public class SudokuSolver {
 		int c=0;
 		while ((line = br.readLine()) != null) {
 			SudokuSolver ss = SudokuSolver.createFromString(line);
-			
 			try {
 				if(ss.solve()){
 					c++;
@@ -66,9 +65,20 @@ public class SudokuSolver {
 		if(board.isValid() == false){
 			//throw new SudokuIncorrectSetup();
 		}
-		solveEasyOnes();
+		this.board.calculateNewBoardStatus();
+		//this.solveEasyOnes();
+		//this.board.calculateNewBoardStatus();
 		return this.solveUsingDFS();
 		
+	}
+	
+	public String getSolution(){
+		String sol = "";
+		for(SudokuField f: this.board){
+			sol+=f;
+		}
+		
+		return sol;
 	}
 	
 	public void print(){
@@ -93,7 +103,7 @@ public class SudokuSolver {
 			return false;
 		}
 		SudokuField minimumField = board.getMinimumField();
-		Set<Integer> possibleNumbers = new HashSet<Integer>(minimumField.getPossibleNumbers());
+		Set<Integer> possibleNumbers = minimumField.getPossibleNumbers();
 		for(int possibleNumber: possibleNumbers){
 			this.board.enterIntoNewState(); // something like copying board
 			minimumField.setMaybeNumber(possibleNumber);
@@ -129,17 +139,15 @@ public class SudokuSolver {
 		for(int x=0; x<this.board.SIZE; x++){
 			for(int y=0; y<this.board.SIZE; y++){
 				one = this.board.get(x,y);
-				if(one.getPossibleNumbers().size()==1 && one.hasNumberSet()==false){
+				if(one.getPossibleNumbersSize()==1 && one.hasNumberSet()==false){
 					Integer number = (Integer)one.getPossibleNumbers().toArray()[0];
 					one.setMaybeNumber(number);
-					atLeastOne = true;
+					this.board.calculateNewBoardStatus();
+					//print();
+					solveEasyOnes();
+					return;
 				}
 			}
-		}
-		if(atLeastOne){
-			this.board.calculateNewBoardStatus();
-			//print();
-			solveEasyOnes();
 		}
 	}
 	

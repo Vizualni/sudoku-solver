@@ -103,9 +103,9 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 	}
 	
 	private void calculateNewBoardStatusRow(){
-		Set<Integer> set;
+		Set<Integer> set = new HashSet<Integer>();;
 		for(int x=0; x<this.SIZE; x++){
-			set = new HashSet<Integer>();
+			set.clear();
 			for(int y=0; y<this.SIZE; y++){ // finding all numbers
 				int value = this.get(x, y).getCurrentNumber();
 				if(value>0){
@@ -122,9 +122,9 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 	}
 	
 	private void calculateNewBoardStatusColumn(){
-		Set<Integer> set;
+		Set<Integer> set = new HashSet<Integer>();
 		for(int x=0; x<this.SIZE; x++){
-			set = new HashSet<Integer>();
+			set.clear();
 			for(int y=0; y<this.SIZE; y++){ // finding all numbers
 				int value = this.get(y, x).getCurrentNumber();
 				if(value>0){
@@ -177,7 +177,7 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 				if( this.get(x,y).hasNumberSet() == false &&
 					(
 						min==null ||
-						this.get(x,y).getPossibleNumbers().size()<min.getPossibleNumbers().size()
+						this.get(x,y).getPossibleNumbersSize()<min.getPossibleNumbersSize()
 					)
 				  ){
 					min = this.get(x,y);
@@ -193,7 +193,7 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 		this.calculateNewBoardStatus();
 		for(int x=0; x<this.SIZE; x++){
 			for(int y=0; y<this.SIZE; y++){
-				if(this.get(x, y).isFieldSet()==false && this.get(x, y).isMaybeSet()==false && this.get(x, y).getPossibleNumbers().size()==0){
+				if(this.get(x, y).isFieldSet()==false && this.get(x, y).isMaybeSet()==false && this.get(x, y).getPossibleNumbersSize()==0){
 					return false;
 				}
 			}

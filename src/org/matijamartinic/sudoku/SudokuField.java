@@ -12,7 +12,7 @@ public class SudokuField {
 	private int maybeNumber = 0;
 	private int x, y;
 	private boolean changed = false;
-	
+	private int possibleNumbersSize = 0;
 	private Stack<Integer> history = null;
 	
 	private Set<Integer> possibleNumbers = new HashSet<Integer>();
@@ -34,6 +34,7 @@ public class SudokuField {
 		if(possibleNumbers.contains(number) && this.isFieldSet()==false){
 			this.maybeNumber = number;
 			possibleNumbers.remove(number);
+			possibleNumbersSize--;
 			return true;
 		}
 		return false;
@@ -47,6 +48,10 @@ public class SudokuField {
 	
 	public Set<Integer> getPossibleNumbers(){
 		return new HashSet<Integer>(this.possibleNumbers);
+	}
+	
+	public int getPossibleNumbersSize(){
+		return this.possibleNumbersSize;
 	}
 	
 	public boolean isFieldSet(){
@@ -79,15 +84,16 @@ public class SudokuField {
 	
 	public void resetPossibleNumbers(){
 		if(this.isFieldSet()){
-			this.possibleNumbers = new HashSet<Integer>();
 			return;
 		}
 		this.possibleNumbers = new HashSet<Integer>(SudokuBoard.allNumbers);
+		this.possibleNumbersSize = SudokuBoard.SIZE;
 	}
 	
 	public boolean removeNumberFromPossibleNumbers(int number){
 		if(this.possibleNumbers.contains(number)){
 			this.possibleNumbers.remove(number);
+			this.possibleNumbersSize--;
 			return true;
 		}
 		return false;
