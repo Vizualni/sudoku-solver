@@ -8,7 +8,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.matijamartinic.sudoku.PairXY;
 import org.matijamartinic.sudoku.SudokuBoard;
+import org.matijamartinic.sudoku.SudokuBoardSmaller;
 import org.matijamartinic.sudoku.SudokuField;
 import org.matijamartinic.sudoku.exception.SudokuIncorrectSetup;
 
@@ -26,32 +28,32 @@ public class SudokuSolver {
 		 
 		String line = null;
 		int c=0;
+		long ukupnoVrijeme = 0;
 		while ((line = br.readLine()) != null) {
 			SudokuSolver ss = SudokuSolver.createFromString(line);
-			try {
-				if(ss.solve()){
-					c++;
-					System.out.println(c);
-				}else{
-					System.out.println("nije");
-				}
-				//ss.print();
-			} catch (SudokuIncorrectSetup e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			
+			long startTime = System.nanoTime();
+			if(ss.solve()){
+				c++;
+				long endTime = System.nanoTime();
+				System.out.println(c + " time: " + (endTime- startTime)/1000000000.0 + " s");
+				ukupnoVrijeme += endTime- startTime;
+				//ss.solution.print();
+			}else{
+				System.out.println("nije");
 			}
-			ss.print();
 		}
-		System.out.println("rjeseno: "+c);
+		System.out.println("rjeseno: "+c + ", ukupno vrijeme: "+ukupnoVrijeme/1000000000.0 + " s");
 		br.close();
 		
 		
 	}
 
-	private SudokuBoard board = null;
+	private SudokuBoardSmaller board = null;
+	private SudokuBoardSmaller solution = null;
 	private boolean cancel = false;
 	
-	public SudokuSolver(SudokuBoard board){
+	public SudokuSolver(SudokuBoardSmaller board){
 		if(board==null){
 			throw new IllegalArgumentException();
 		}
@@ -60,32 +62,32 @@ public class SudokuSolver {
 		//this.board.print();
 	}
 	
-	public boolean solve() throws SudokuIncorrectSetup{	
-		
-		if(board.isValid() == false){
-			//throw new SudokuIncorrectSetup();
-		}
-		this.board.calculateNewBoardStatus();
-		//this.solveEasyOnes();
-		//this.board.calculateNewBoardStatus();
-		return this.solveUsingDFS();
+	public boolean solve(){	
+		//this.board.print();
+		solution = SudokuSolver.solveUsingDFS(this.board);
+		return solution!=null;
 		
 	}
 	
 	public String getSolution(){
-		String sol = "";
-		for(SudokuField f: this.board){
-			sol+=f;
+		StringBuilder sol = new StringBuilder();
+		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
+			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
+				sol.append(this.solution.getNumbers(i, j).toArray()[0]);
+			}
 		}
-		
-		return sol;
+		return sol.toString();
 	}
 	
 	public void print(){
 		this.board.print();
 	}
 	
-	private boolean solveUsingDFS(){
+	public static SudokuSolver createFromString(String line){
+		return new SudokuSolver(SudokuBoardSmaller.createFromString(line));
+	}
+	
+	private static SudokuBoardSmaller solveUsingDFS(SudokuBoardSmaller board){
 		// pronaci neko polje gdje ih ima najmanje onih mogucih
 		// staviti to jedno polje 
 		// provjeriti ako ima kontradikcije
@@ -93,78 +95,36 @@ public class SudokuSolver {
 		// ako nema, onda je to mozda dobra kombinacija
 		// i od tih "dobrih" kombinacija idem na vrh loopa
 		// i trazim dalje ako je u redu sve
-		
-		if(this.board.isSolved()==true){
-			//System.out.println("WTF");
-			return true;
+		//System.out.println(board.getSize());
+		if(board.getSize()==SudokuBoardSmaller.SIZE2){
+			//board.print();
+			return board;
 		}
 		
-		if(this.cancel == true){
-			return false;
-		}
-		SudokuField minimumField = board.getMinimumField();
-		Set<Integer> possibleNumbers = minimumField.getPossibleNumbers();
+		PairXY minimumField = board.getMinimumField();
+		int x = minimumField.x;
+		int y = minimumField.y;
+		//System.out.println(""+x + " " + y);
+		HashSet<Byte> possibleNumbers = board.getNumbers(x, y);
+		SudokuBoardSmaller copyBoard = null;
 		for(int possibleNumber: possibleNumbers){
-			this.board.enterIntoNewState(); // something like copying board
-			minimumField.setMaybeNumber(possibleNumber);
-			this.board.calculateNewBoardStatus();
-			//this.solveEasyOnes();
-			//this.board.calculateNewBoardStatus();
-			if(this.board.isValid()==false){
-				//System.out.println("efektivo usao ovdje");
-				//print();
-				this.board.goBackOneState();
-				this.board.calculateNewBoardStatus();
+			copyBoard = board.copy();
+
+			if(copyBoard.setNumber((byte) possibleNumber, x, y)==false){
 				continue;
-				//print();
 			}
-			if(this.solveUsingDFS()){
-				return true;
-			}else{
-				this.board.goBackOneState();
-				this.board.calculateNewBoardStatus();
+			SudokuBoardSmaller possibleSolution = solveUsingDFS(copyBoard);
+			if(possibleSolution!=null){
+				return possibleSolution;
 			}
 			
 		}
-		return false;
+		return null;
 	}
+	
 	
 	public void cancelAction(){
 		this.cancel=true;
-	}
-		
-	private void solveEasyOnes(){
-		SudokuField one;
-		boolean atLeastOne = false;
-		for(int x=0; x<this.board.SIZE; x++){
-			for(int y=0; y<this.board.SIZE; y++){
-				one = this.board.get(x,y);
-				if(one.getPossibleNumbersSize()==1 && one.hasNumberSet()==false){
-					Integer number = (Integer)one.getPossibleNumbers().toArray()[0];
-					one.setMaybeNumber(number);
-					this.board.calculateNewBoardStatus();
-					//print();
-					solveEasyOnes();
-					return;
-				}
-			}
-		}
-	}
-	
-	
-	public static SudokuSolver createFromString(String numbers){
-		if(numbers.length()!=SudokuBoard.SIZE*SudokuBoard.SIZE){
-			throw new IllegalArgumentException();
-		}
-		int c = 0;
-		int nums[][] = new int[9][9];
-		for(int x=0; x<SudokuBoard.SIZE; x++){
-			for (int y = 0; y < SudokuBoard.SIZE; y++) {
-				nums[x][y] = Integer.parseInt(Character.toString(numbers.charAt(c)));
-				c++; // you wish
-			}
-		}
-		return new SudokuSolver(new SudokuBoard(nums));
 	}
 	
 }

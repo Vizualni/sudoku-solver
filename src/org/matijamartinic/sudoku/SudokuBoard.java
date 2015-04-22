@@ -89,7 +89,7 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 		}
 	}
 	
-	public void calculateNewBoardStatus(){
+	public boolean calculateNewBoardStatus(){
 		this.resetFields();
 		
 		// first for each row
@@ -100,6 +100,17 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 		
 		// 3x3 boxes
 		this.calculateNewBoardStatus3x3Box();
+		
+		
+		for (int x = 0; x < this.SIZE; x++) {
+			for (int y = 0; y < this.SIZE; y++) {
+				if(this.get(x, y).getPossibleNumbersSize()==0 && this.get(x, y).hasNumberSet()==false){
+					return false;
+				}
+			}
+		}
+		return true;
+		
 	}
 	
 	private void calculateNewBoardStatusRow(){
@@ -193,7 +204,7 @@ public class SudokuBoard implements Iterator<SudokuField>, Iterable<SudokuField>
 		this.calculateNewBoardStatus();
 		for(int x=0; x<this.SIZE; x++){
 			for(int y=0; y<this.SIZE; y++){
-				if(this.get(x, y).isFieldSet()==false && this.get(x, y).isMaybeSet()==false && this.get(x, y).getPossibleNumbersSize()==0){
+				if(this.get(x, y).hasNumberSet()==false && this.get(x, y).getPossibleNumbersSize()==0){
 					return false;
 				}
 			}

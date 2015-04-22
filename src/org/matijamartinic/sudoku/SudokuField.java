@@ -16,6 +16,7 @@ public class SudokuField {
 	private Stack<Integer> history = null;
 	
 	private Set<Integer> possibleNumbers = new HashSet<Integer>();
+	private Set<Integer> blackListedNumbers = new HashSet<Integer>();
 	
 	public SudokuField(int value, int x, int y) throws IllegalArgumentException{
 		this.x = x;
@@ -37,7 +38,7 @@ public class SudokuField {
 			possibleNumbersSize--;
 			return true;
 		}
-		return false;
+		return true;
 	}
 	
 	private void checkForNumber(int number) throws IllegalArgumentException{
@@ -51,7 +52,9 @@ public class SudokuField {
 	}
 	
 	public int getPossibleNumbersSize(){
-		return this.possibleNumbersSize;
+		if(this.possibleNumbers.size()==0 && this.isMaybeSet()==false){
+		}
+		return this.possibleNumbers.size();
 	}
 	
 	public boolean isFieldSet(){
@@ -71,6 +74,7 @@ public class SudokuField {
 			return;
 		}
 		history.push(this.maybeNumber);
+		//this.applyBlacklisted();
 		
 	}
 
@@ -79,6 +83,7 @@ public class SudokuField {
 			return;
 		}
 		this.maybeNumber = history.pop();
+		this.applyBlacklisted();
 		
 	}
 	
@@ -87,7 +92,15 @@ public class SudokuField {
 			return;
 		}
 		this.possibleNumbers = new HashSet<Integer>(SudokuBoard.allNumbers);
-		this.possibleNumbersSize = SudokuBoard.SIZE;
+		//this.applyBlacklisted();
+	}
+	
+	public void addBlackListed(int n){
+		this.blackListedNumbers.add(n);
+		this.applyBlacklisted();
+		if(this.maybeNumber == n){
+			//this.maybeNumber = 0;
+		}
 	}
 	
 	public boolean removeNumberFromPossibleNumbers(int number){
@@ -109,6 +122,11 @@ public class SudokuField {
 	@Override
 	public String toString(){
 		return this.getCurrentNumber() + "";// + this.possibleNumbers;
+	}
+
+	public void applyBlacklisted() {
+		this.possibleNumbers.removeAll(this.blackListedNumbers);
+		this.possibleNumbersSize = this.possibleNumbers.size();		
 	}
 	
 	
