@@ -1,3 +1,4 @@
 # Sudoku solver
-simple sudoku solver written in Java
-Usage: writelater.todo
+Sudoku solver written in Java for my Android application. (LINK HERE)
+
+
