@@ -6,15 +6,10 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashSet;
-import java.util.Set;
 
 import org.matijamartinic.sudoku.PairXY;
 import org.matijamartinic.sudoku.SudokuBitField;
-import org.matijamartinic.sudoku.SudokuBoard;
 import org.matijamartinic.sudoku.SudokuBoardSmaller;
-import org.matijamartinic.sudoku.SudokuField;
-import org.matijamartinic.sudoku.exception.SudokuIncorrectSetup;
 
 public class SudokuSolver {
 	
@@ -56,14 +51,12 @@ public class SudokuSolver {
 
 	private SudokuBoardSmaller board = null;
 	private SudokuBoardSmaller solution = null;
-	private boolean cancel = false;
 	
 	public SudokuSolver(SudokuBoardSmaller board){
 		if(board==null){
 			throw new IllegalArgumentException();
 		}
 		this.board = board;
-		this.cancel = false;
 		//this.board.print();
 	}
 	
@@ -135,9 +128,5 @@ public class SudokuSolver {
 		return null;
 	}
 	
-	
-	public void cancelAction(){
-		this.cancel=true;
-	}
 	
 }
