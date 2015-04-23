@@ -17,7 +17,7 @@ public class SudokuSolver {
 		
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(new File("/tmp/sudokus.dat")));
+			br = new BufferedReader(new FileReader(new File("test_files/hard.dat")));
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -26,7 +26,7 @@ public class SudokuSolver {
 		String line = null;
 		int c=0;
 		long ukupnoVrijeme = 0; 
-		PrintWriter pw = new PrintWriter("/tmp/solutions.dat");
+		PrintWriter pw = new PrintWriter("test_files/solutions.dat");
 		while ((line = br.readLine()) != null) {
 			SudokuSolver ss = SudokuSolver.createFromString(line);
 			

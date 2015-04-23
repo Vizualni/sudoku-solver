@@ -274,7 +274,7 @@ public class SudokuBoardSmaller {
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
 
 				int index = i*SudokuBoardSmaller.SIZE + j; //fuckit!!
-				if(line.charAt(index)!='0'){
+				if(line.charAt(index)!='0' && line.charAt(index)!='.'){
 					int num = Character.getNumericValue(line.charAt(index));
 					sss.setNumber(1<<(num-1), i, j);
 				}
