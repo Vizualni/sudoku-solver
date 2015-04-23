@@ -13,7 +13,7 @@ public class SudokuBitField {
 		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;	
 	}
 	
-	public static int getAllNumbers(){ return 0x000001ff; }
+	public static int getAllNumbers(){ return 0x0000ffff; }
 
 	public static int setBitToBitField(int bitField, int bitToSet){ return bitField | bitToSet; }
 
@@ -22,7 +22,7 @@ public class SudokuBitField {
 	public static boolean isEmpty(int bitField){return bitField==0;}
 	
 	public static int getNumber(int bitField){
-		for(int i=1; i<=9; i++)
+		for(int i=1; i<=SudokuBoardSmaller.SIZE; i++)
 			if((bitField & (1<<(i-1)))>0){
 				return i;
 		}
@@ -31,7 +31,7 @@ public class SudokuBitField {
 	
 	public static String toString(int bitField){
 		String res="";
-		for(int i=1; i<=9; i++)
+		for(int i=1; i<=SudokuBoardSmaller.SIZE; i++)
 			if((bitField & (1<<(i-1)))>0){
 				res +=i;
 		}

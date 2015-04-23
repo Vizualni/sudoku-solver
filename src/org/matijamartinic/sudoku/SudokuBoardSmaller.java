@@ -1,13 +1,14 @@
 package org.matijamartinic.sudoku;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 
 public class SudokuBoardSmaller {
 	
 	private int [][]numbers;
 	
-	final public static int SIZE=9;
+	final public static int SIZE=16;
 	final public static int SIZE2 = SudokuBoardSmaller.SIZE*SudokuBoardSmaller.SIZE;
 	
 	private int size = 0;
@@ -64,6 +65,8 @@ public class SudokuBoardSmaller {
 		}
 	}
 	
+	public static HashMap<Character, Integer> table16 = null;
+	
 	public static int[][] getUnits(int x, int y){
 		if(units==null){
 			calculateUnits();
@@ -78,6 +81,15 @@ public class SudokuBoardSmaller {
 				isset[i][j]=false;
 			}
 		}
+		setTable16();
+	}
+	
+	public static void setTable16(){
+		table16 = new HashMap<Character, Integer>();
+		for(char a='A',c=1; a<='P'; a++, c++){
+			table16.put(Character.valueOf(a), Integer.valueOf(c));
+		}
+		table16.put(new Character('0'), new Integer(0));
 	}
 	
 	public SudokuBoardSmaller(int [][]copyNums, boolean[][] copySets) {
@@ -248,10 +260,12 @@ public class SudokuBoardSmaller {
 
 	public static SudokuBoardSmaller createFromString(String line) {
 		int [][]copyNums = new int[SudokuBoardSmaller.SIZE][SudokuBoardSmaller.SIZE];
-		
+		if(table16==null){
+			setTable16();
+		}
 		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
-				int index = i*9 + j;
+				int index = i*SudokuBoardSmaller.SIZE + j;
 				copyNums[i][j] = SudokuBitField.getAllNumbers();
 			}
 		}
@@ -261,9 +275,9 @@ public class SudokuBoardSmaller {
 		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
 
-				int index = i*9 + j; //fuckit!!
+				int index = i*SudokuBoardSmaller.SIZE + j; //fuckit!!
 				if(line.charAt(index)!='0'){
-					int num = Character.getNumericValue(line.charAt(index));
+					int num = table16.get(Character.valueOf(line.charAt(index))).intValue();
 					sss.setNumber(1<<(num-1), i, j);
 				}
 				
