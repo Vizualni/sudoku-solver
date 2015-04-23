@@ -13,7 +13,7 @@ public class SudokuBitField {
 		return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;	
 	}
 	
-	public static int getAllNumbers(){ return 0x0000ffff; }
+	public static int getAllNumbers(){ return 0x000001ff; }
 
 	public static int setBitToBitField(int bitField, int bitToSet){ return bitField | bitToSet; }
 

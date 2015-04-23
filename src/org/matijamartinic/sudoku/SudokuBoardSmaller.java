@@ -8,7 +8,7 @@ public class SudokuBoardSmaller {
 	
 	private int [][]numbers;
 	
-	final public static int SIZE=16;
+	final public static int SIZE=9;
 	final public static int SIZE2 = SudokuBoardSmaller.SIZE*SudokuBoardSmaller.SIZE;
 	
 	private int size = 0;
@@ -21,7 +21,7 @@ public class SudokuBoardSmaller {
 			return;
 		}
 		
-		units = new int[SIZE][SIZE][SIZE+SIZE-2+9][2];
+		units = new int[SIZE][SIZE][SIZE+SIZE-2+4][2];
 		for (int i = 0; i < SIZE; i++) {
 			//units.add(new ArrayList< ArrayList<Integer[]> >(SIZE));
 			for (int j = 0; j < SIZE; j++) {
@@ -50,8 +50,8 @@ public class SudokuBoardSmaller {
 				units[x][y][c++] = intic;
 			}
 		}
-		int startX = (x/4)*4; int startY = (y/4)*4;
-		int endX = startX+4; int endY = startY+4;
+		int startX = (x/3)*3; int startY = (y/3)*3;
+		int endX = startX+3; int endY = startY+3;
 		
 		for(int i = startX; i<endX; i++){
 			for(int j = startY; j<endY; j++){
@@ -166,11 +166,11 @@ public class SudokuBoardSmaller {
 	public String toString(){
 		StringBuilder sb = new StringBuilder();
 		for(int x=0; x<SudokuBoardSmaller.SIZE; x++){
-			if(x>0 && x%4==0){
+			if(x>0 && x%3==0){
 				sb.append("-----------------------\n");
 			}
 			for(int y=0; y<SudokuBoardSmaller.SIZE; y++){
-				if(y>0 && y%4==0){
+				if(y>0 && y%3==0){
 					sb.append("| ");
 				}
 				sb.append((SudokuBitField.toString(this.numbers[x][y]))+" ");
@@ -275,7 +275,7 @@ public class SudokuBoardSmaller {
 
 				int index = i*SudokuBoardSmaller.SIZE + j; //fuckit!!
 				if(line.charAt(index)!='0'){
-					int num = table16.get(Character.valueOf(line.charAt(index))).intValue();
+					int num = Character.getNumericValue(line.charAt(index));
 					sss.setNumber(1<<(num-1), i, j);
 				}
 				

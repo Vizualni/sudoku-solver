@@ -17,7 +17,7 @@ public class SudokuSolver {
 		
 		BufferedReader br = null;
 		try {
-			br = new BufferedReader(new FileReader(new File("/tmp/1616.dat")));
+			br = new BufferedReader(new FileReader(new File("/tmp/sudokus.dat")));
 		} catch (FileNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -37,7 +37,7 @@ public class SudokuSolver {
 				System.out.println(c + " time: " + (endTime- startTime)/1000000000.0 + " s");
 				ukupnoVrijeme += endTime- startTime;
 				pw.println(ss.solution.toLine());
-				ss.solution.print();
+				//ss.solution.print();
 			}else{
 				System.out.println("nije");
 			}
@@ -85,7 +85,6 @@ public class SudokuSolver {
 	}
 	
 	public static SudokuSolver createFromString(String line){
-		System.out.println(line);
 		return new SudokuSolver(SudokuBoardSmaller.createFromString(line));
 	}
 	
