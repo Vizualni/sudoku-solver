@@ -24,27 +24,24 @@ public class SudokuSolver {
 		}
 		 
 		String line = null;
-		int c=0;
-		long ukupnoVrijeme = 0; 
+		int c=0, howMuch=0;
+		long time = 0; 
 		PrintWriter pw = new PrintWriter("test_files/solutions.dat");
 		while ((line = br.readLine()) != null) {
 			SudokuSolver ss = SudokuSolver.createFromString(line);
-			
+			howMuch++;
 			long startTime = System.nanoTime();
 			if(ss.solve()){
 				long endTime = System.nanoTime();
 				c++;
 				System.out.println(c + " time: " + (endTime- startTime)/1000000000.0 + " s");
-				ukupnoVrijeme += endTime- startTime;
+				time += endTime- startTime;
 				pw.println(ss.solution.toLine());
 				//ss.solution.print();
-			}else{
-				System.out.println("nije");
 			}
 		}
-		pw.close();
-		System.out.println("rjeseno: "+c + ", ukupno vrijeme: "+ukupnoVrijeme/1000000000.0 + " s");
-		br.close();
+		System.out.println("solved: "+c + "/" + howMuch + ", time: "+time/1000000000.0 + " s");
+		br.close();pw.close();
 		
 		
 	}
@@ -57,11 +54,9 @@ public class SudokuSolver {
 			throw new IllegalArgumentException();
 		}
 		this.board = board;
-		//this.board.print();
 	}
 	
 	public boolean solve(){	
-		//this.board.print();
 		if(this.board.solveEasyOnes()==false){
 			return false;
 		}
@@ -89,23 +84,13 @@ public class SudokuSolver {
 	}
 	
 	private static SudokuBoardSmaller solveUsingDFS(SudokuBoardSmaller board){
-		// pronaci neko polje gdje ih ima najmanje onih mogucih
-		// staviti to jedno polje 
-		// provjeriti ako ima kontradikcije
-		// ako ima, onda se vracam u stanje prije i vrtim dalje
-		// ako nema, onda je to mozda dobra kombinacija
-		// i od tih "dobrih" kombinacija idem na vrh loopa
-		// i trazim dalje ako je u redu sve
-		//System.out.println(board.getSize());
 		if(board.getSize()==SudokuBoardSmaller.SIZE2){
-			//board.print();
 			return board;
 		}
 		
 		PairXY minimumField = board.getMinimumField();
 		int x = minimumField.x;
 		int y = minimumField.y;
-		//System.out.println(""+x + " " + y);
 		int possibleNumbers = board.getNumbers(x, y);
 		SudokuBoardSmaller copyBoard = null;
 		for(int i=1; i<=SudokuBitField.getAllNumbers(); i=i<<1){

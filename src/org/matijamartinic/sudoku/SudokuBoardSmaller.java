@@ -282,8 +282,6 @@ public class SudokuBoardSmaller {
 			}
 		}
 		sss.setSize();
-		//System.out.println("PRIJE ");
-		//sss.print();
 		return sss;
 	}
 }
