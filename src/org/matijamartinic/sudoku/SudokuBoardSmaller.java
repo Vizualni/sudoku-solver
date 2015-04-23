@@ -1,13 +1,11 @@
 package org.matijamartinic.sudoku;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+
 
 public class SudokuBoardSmaller {
 	
-	private HashSet<Byte> [][]numbers;
-	
-	private HashSet<Byte> [][]solution = null;
+	private int [][]numbers;
 	
 	final public static int SIZE=9;
 	final public static int SIZE2 = SudokuBoardSmaller.SIZE*SudokuBoardSmaller.SIZE;
@@ -15,8 +13,65 @@ public class SudokuBoardSmaller {
 	private int size = 0;
 	private boolean isset[][] = new boolean[SIZE][SIZE];
 	
+	private static int[][][][]  units = null;
 	
-	public SudokuBoardSmaller(HashSet<Byte> [][]numbers){
+	private static void calculateUnits(){
+		if(SudokuBoardSmaller.units!=null){
+			return;
+		}
+		
+		units = new int[SIZE][SIZE][SIZE+SIZE-2+4][2];
+		for (int i = 0; i < SIZE; i++) {
+			//units.add(new ArrayList< ArrayList<Integer[]> >(SIZE));
+			for (int j = 0; j < SIZE; j++) {
+				calculateFor(i, j);
+			}
+		}
+	}
+	
+	private static void calculateFor(int x, int y){
+		int c =0;
+		int[]intic;
+		for(int i=0; i<SIZE; i++){
+			if(i!=y){
+				intic = new int[2];
+				intic[0] = new Integer(x);
+				intic[1] = new Integer(i);
+				units[x][y][c++] = intic;
+			}
+		}
+		
+		for(int i=0; i<SIZE; i++){
+			if(i!=x){
+				intic = new int[2];
+				intic[0] = new Integer(i);
+				intic[1] = new Integer(y);
+				units[x][y][c++] = intic;
+			}
+		}
+		int startX = (x/3)*3; int startY = (y/3)*3;
+		int endX = startX+3; int endY = startY+3;
+		
+		for(int i = startX; i<endX; i++){
+			for(int j = startY; j<endY; j++){
+				if(!(i==x || j==y)){
+					intic = new int[2];
+					intic[0] = new Integer(i);
+					intic[1] = new Integer(j);
+					units[x][y][c++] = intic;
+				}
+			}
+		}
+	}
+	
+	public static int[][] getUnits(int x, int y){
+		if(units==null){
+			calculateUnits();
+		}
+		return units[x][y];
+	}
+	
+	public SudokuBoardSmaller(int [][]numbers){
 		this.numbers = numbers;
 		for (int i = 0; i < isset.length; i++) {
 			for (int j = 0; j < isset[i].length; j++) {
@@ -25,11 +80,7 @@ public class SudokuBoardSmaller {
 		}
 	}
 	
-	private void setSolution(HashSet<Byte> [][]solution) {
-		this.solution = solution;
-	}
-	
-	public SudokuBoardSmaller(HashSet<Byte>[][] copyNums, boolean[][] copySets) {
+	public SudokuBoardSmaller(int [][]copyNums, boolean[][] copySets) {
 		this(copyNums);
 		this.isset = copySets;
 	}
@@ -42,30 +93,44 @@ public class SudokuBoardSmaller {
 		return this.isset[x][y];
 	}
 	
-
-	
-	public HashSet<Byte> getNumbers(int x, int y){
+	public int getNumbers(int x, int y){
 		return this.numbers[x][y];
 	}
 		
-	public boolean setNumber(byte number, int x, int y){
+	public boolean setNumber(int numberBit, int x, int y){
 		// bla bla x is less than 9...so as y
-		
-		this.numbers[x][y] = new HashSet<Byte>();
-		this.numbers[x][y].add(number);
+		if(this.isSet(x, y) || SudokuBitField.isEmpty(this.numbers[x][y])){
+			return false;
+		}
+		this.numbers[x][y] = numberBit;
 		this.set(x, y);
-		boolean result = this.recalculate(number, x, y);
+		boolean result = this.recalculate(numberBit, x, y);
 		if(result==false){
 			return false;
 		}
-		return this.solveEasyOnes();
+		
+		for(int []br: SudokuBoardSmaller.getUnits(x, y)){
+			int xs = br[0], ys = br[1];
+			if(SudokuBitField.getSize(this.numbers[xs][ys])==1 && this.isSet(xs, ys)==false){
+				if(this.setNumber(this.numbers[xs][ys], xs, ys)==false){
+					return false;
+				}
+			}
+		}
+		
+		return true;//this.solveEasyOnes();
 	}
 	
-	private boolean solveEasyOnes(){
-		for(int x=0; x<this.SIZE; x++){
-			for(int y=0; y<this.SIZE; y++){
-				if(this.getNumbers(x, y).size()==1 && this.isSet(x, y)==false){
-					return this.setNumber(((Byte)this.getNumbers(x, y).toArray()[0]).byteValue(), x, y);
+	public boolean solveEasyOnes(){
+		
+
+		for(int x=0; x<SudokuBoardSmaller.SIZE; x++){
+			for(int y=0; y<SudokuBoardSmaller.SIZE; y++){
+				if(SudokuBitField.isEmpty(this.getNumbers(x, y))){
+					return false;
+				}
+				if(SudokuBitField.getSize(this.getNumbers(x, y))==1 && this.isSet(x, y)==false){
+					return this.setNumber(this.getNumbers(x, y), x, y);
 				}
 			}
 		}
@@ -73,108 +138,97 @@ public class SudokuBoardSmaller {
 	}
 	
 	public void print(){
-		for(int x=0; x<this.SIZE; x++){
+		System.out.println(this.toString());
+	}
+	
+	public String toLine(){
+		StringBuilder sb = new StringBuilder();
+		for (int x = 0; x < SudokuBoardSmaller.SIZE; x++) {
+			for (int y = 0; y < SudokuBoardSmaller.SIZE; y++) {
+				sb.append(SudokuBitField.toString(this.getNumbers(x, y)));
+			}
+		}
+		return sb.toString();
+	}
+	
+	@Override
+	public String toString(){
+		StringBuilder sb = new StringBuilder();
+		for(int x=0; x<SudokuBoardSmaller.SIZE; x++){
 			if(x>0 && x%3==0){
-				System.out.println("-----------------------");
+				sb.append("-----------------------\n");
 			}
-			for(int y=0; y<this.SIZE; y++){
+			for(int y=0; y<SudokuBoardSmaller.SIZE; y++){
 				if(y>0 && y%3==0){
-					System.out.print("| ");
+					sb.append("| ");
 				}
-				System.out.print(this.numbers[x][y]+" ");
+				sb.append((SudokuBitField.toString(this.numbers[x][y]))+" ");
 			}
-			System.out.println();
+			sb.append("\n");
 			
 		}
-		System.out.println();
+		sb.append("\n");
+		return sb.toString();
 	}
 	
 	public PairXY getMinimumField(){
-		HashSet<Byte> min = null;
-		int minX=0, minY=0;
+		int min = -1;
+		int minSize = 999;
+		PairXY p = new PairXY();
+
 		
-		for(int x=0; x<this.SIZE; x++){
-			for(int y=0; y<this.SIZE; y++){
-				if(min==null){
+		for(int x=0; x<SudokuBoardSmaller.SIZE; x++){
+			for(int y=0; y<SudokuBoardSmaller.SIZE; y++){
+				if(min==-1){
 					if(this.isSet(x, y)==false){
 						min = this.numbers[x][y];
-						minX=x;
-						minY=y;
+						p.x=x;
+						p.y=y;
 					}
 					continue;
 				}
-				if(this.getNumbers(x, y).size()<min.size() && this.isSet(x, y)==false){
+				if(SudokuBitField.getSize(this.getNumbers(x, y)) < minSize && this.isSet(x, y)==false){
 					min = this.numbers[x][y];
-					minX=x;
-					minY=y;
+					minSize = SudokuBitField.getSize(this.getNumbers(x, y));
+					p.x=x;
+					p.y=y;
 				}
-				
+				if(min!=-1 && minSize<=2){
+					return p;
+				}
 			}
 		}
-		PairXY p = new PairXY();
-		p.x=minX;
-		p.y=minY;
+		
 		return p;
 	}
 
-	private boolean recalculate(byte number, int x, int y){
+	private boolean recalculate(int numberBit, int x, int y){
 		//recalculate rows, cols and 3x3's
-		
-		for(int i=0; i<this.SIZE; i++){
-			if(i!=y){
-				this.numbers[x][i].remove((byte) number);
-				if(this.numbers[x][i].size()==0){
-					return false;
-				}
+		for(int []br: SudokuBoardSmaller.getUnits(x, y)){
+			int xs = br[0], ys = br[1];
+			this.numbers[xs][ys] = SudokuBitField.removeBitFromBitField(this.numbers[xs][ys], numberBit);
+			if(SudokuBitField.isEmpty(this.numbers[xs][ys])){
+				return false;
 			}
-		}
-		
-		for(int i=0; i<this.SIZE; i++){
-			if(i!=x){
-				this.numbers[i][y].remove((byte) number);
-				if(this.numbers[i][y].size()==0){
-					return false;
-				}
-			}
-		}
-		int startX = (x/3)*3; int startY = (y/3)*3;
-		int endX = startX+3; int endY = startY+3;
-		
-		for(int i = startX; i<endX; i++){
-			for(int j = startY; j<endY; j++){
-				if(!(i==x && j==y)){
-					this.numbers[i][j].remove((byte) number);
-					if(this.numbers[i][j].size()==0){
-						return false;
-					}
-				}
-			}
-		}
-		
-		setSize();
-		
+		}		
+				
 		return true;
 	}
 	
-	public boolean isValid(){
-		return true;
-	}
 	
 	public SudokuBoardSmaller copy(){
-		HashSet<Byte>[][] hashSets = new HashSet[SudokuBoardSmaller.SIZE][SudokuBoardSmaller.SIZE];
-		HashSet<Byte> [][]copyNums = hashSets;
+		int [][]copyNums = new int[SudokuBoardSmaller.SIZE][SudokuBoardSmaller.SIZE];
 		boolean [][]copySets = new boolean[SIZE][SIZE];
 		
 		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
-				copyNums[i][j] = new HashSet<Byte>(this.numbers[i][j]);
+				copyNums[i][j] = this.numbers[i][j];
 				copySets[i][j] = this.isset[i][j];
 			}
 		}
 		
 		return new SudokuBoardSmaller(copyNums, copySets);
 	}
-	
 	
 	private void setSize(){
 		size = 0;
@@ -188,20 +242,17 @@ public class SudokuBoardSmaller {
 	}
 	
 	public int getSize(){
+		setSize();
 		return size;
 	}
 
 	public static SudokuBoardSmaller createFromString(String line) {
-		HashSet<Byte> [][]copyNums = new HashSet[SudokuBoardSmaller.SIZE][SudokuBoardSmaller.SIZE];
-		HashSet<Byte> all = new HashSet<Byte>();
-		all.add((byte) 1); all.add((byte) 2); all.add((byte) 3);
-		all.add((byte) 4); all.add((byte) 5); all.add((byte) 6);
-		all.add((byte) 7); all.add((byte) 8); all.add((byte) 9);
+		int [][]copyNums = new int[SudokuBoardSmaller.SIZE][SudokuBoardSmaller.SIZE];
 		
 		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
 				int index = i*9 + j;
-				copyNums[i][j] = new HashSet<Byte>(all);
+				copyNums[i][j] = SudokuBitField.getAllNumbers();
 			}
 		}
 		
@@ -212,13 +263,15 @@ public class SudokuBoardSmaller {
 
 				int index = i*9 + j; //fuckit!!
 				if(line.charAt(index)!='0'){
-					int num = Integer.valueOf(Character.valueOf(line.charAt(index)).toString());
-					sss.setNumber((byte) num, i, j);
+					int num = Character.getNumericValue(line.charAt(index));
+					sss.setNumber(1<<(num-1), i, j);
 				}
 				
 			}
 		}
 		sss.setSize();
+		//System.out.println("PRIJE ");
+		//sss.print();
 		return sss;
 	}
 }

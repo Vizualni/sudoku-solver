@@ -5,10 +5,12 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.matijamartinic.sudoku.PairXY;
+import org.matijamartinic.sudoku.SudokuBitField;
 import org.matijamartinic.sudoku.SudokuBoard;
 import org.matijamartinic.sudoku.SudokuBoardSmaller;
 import org.matijamartinic.sudoku.SudokuField;
@@ -28,21 +30,24 @@ public class SudokuSolver {
 		 
 		String line = null;
 		int c=0;
-		long ukupnoVrijeme = 0;
+		long ukupnoVrijeme = 0; 
+		PrintWriter pw = new PrintWriter("/tmp/solutions_hard.dat");
 		while ((line = br.readLine()) != null) {
 			SudokuSolver ss = SudokuSolver.createFromString(line);
 			
 			long startTime = System.nanoTime();
 			if(ss.solve()){
-				c++;
 				long endTime = System.nanoTime();
+				c++;
 				System.out.println(c + " time: " + (endTime- startTime)/1000000000.0 + " s");
 				ukupnoVrijeme += endTime- startTime;
-				//ss.solution.print();
+				pw.println(ss.solution.toLine());
+				ss.solution.print();
 			}else{
 				System.out.println("nije");
 			}
 		}
+		pw.close();
 		System.out.println("rjeseno: "+c + ", ukupno vrijeme: "+ukupnoVrijeme/1000000000.0 + " s");
 		br.close();
 		
@@ -64,6 +69,9 @@ public class SudokuSolver {
 	
 	public boolean solve(){	
 		//this.board.print();
+		if(this.board.solveEasyOnes()==false){
+			return false;
+		}
 		solution = SudokuSolver.solveUsingDFS(this.board);
 		return solution!=null;
 		
@@ -73,7 +81,7 @@ public class SudokuSolver {
 		StringBuilder sol = new StringBuilder();
 		for(int i=0; i<SudokuBoardSmaller.SIZE; i++){
 			for(int j=0; j<SudokuBoardSmaller.SIZE; j++){
-				sol.append(this.solution.getNumbers(i, j).toArray()[0]);
+				sol.append(SudokuBitField.getNumber(this.solution.getNumbers(i, j)) + "");
 			}
 		}
 		return sol.toString();
@@ -105,12 +113,16 @@ public class SudokuSolver {
 		int x = minimumField.x;
 		int y = minimumField.y;
 		//System.out.println(""+x + " " + y);
-		HashSet<Byte> possibleNumbers = board.getNumbers(x, y);
+		int possibleNumbers = board.getNumbers(x, y);
 		SudokuBoardSmaller copyBoard = null;
-		for(int possibleNumber: possibleNumbers){
+		for(int i=1; i<=SudokuBitField.getAllNumbers(); i=i<<1){
+			int possibleNumber = possibleNumbers & i;
+			if(possibleNumber==0){
+				continue;
+			}
 			copyBoard = board.copy();
 
-			if(copyBoard.setNumber((byte) possibleNumber, x, y)==false){
+			if(copyBoard.setNumber(possibleNumber, x, y)==false){
 				continue;
 			}
 			SudokuBoardSmaller possibleSolution = solveUsingDFS(copyBoard);
